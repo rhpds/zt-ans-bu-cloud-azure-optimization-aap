@@ -41,7 +41,7 @@ tee /tmp/setup.yml << EOF
 
   tasks:
     - name: Set base url
-      awx.awx.settings:
+      ansible.controller.settings:
         name: AWX_COLLECTIONS_ENABLED
         value: "false"
         controller_username: "{{ username }}"
@@ -50,7 +50,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Add azure credential to automation controller
-      awx.awx.credential:
+      ansible.controller.credential:
         name: azure_credential
         description: Azure Instruqt Credential
         organization: "Default"
@@ -72,7 +72,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Add RHEL on Azure credential to automation controller
-      awx.awx.credential:
+      ansible.controller.credential:
         name: "RHEL on Azure"
         description: "Machine Credential for Azure RHEL instances"
         organization: "Default"
@@ -90,7 +90,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Add Windows on Azure credential to automation controller
-      awx.awx.credential:
+      ansible.controller.credential:
         name: "Windows on Azure"
         description: "Machine Credential for Azure Windows instances"
         organization: "Default"
@@ -108,7 +108,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Add EE to the controller instance
-      awx.awx.execution_environment:
+      ansible.controller.execution_environment:
         name: "Microsoft Azure Execution Environment"
         image: quay.io/aoc/ee-aap-azure-sre
         # image: quay.io/acme_corp/azure_ee
@@ -118,7 +118,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Add Azure Demos Project project
-      awx.awx.project:
+      ansible.controller.project:
         name: "Azure Demos Project"
         description: "This is from github.com/ansible-cloud"
         organization: "Default"
@@ -135,7 +135,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Add Product Demos project
-      awx.awx.project:
+      ansible.controller.project:
         name: "Product Demos Project"
         description: "This is from github.com/ansible/product-demos"
         organization: "Default"
@@ -152,7 +152,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Add project
-      awx.awx.project:
+      ansible.controller.project:
         name: "Cloud Visibility Project"
         description: "This is from github.com/ansible-cloud"
         organization: "Default"
@@ -169,7 +169,7 @@ tee /tmp/setup.yml << EOF
       until: controller_try is not failed
 
     - name: Delete native job template
-      awx.awx.job_template:
+      ansible.controller.job_template:
         name: "Demo Job Template"
         state: "absent"
         controller_username: "{{ username }}"
@@ -178,7 +178,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Add ansible-1 host
-      awx.awx.host:
+      ansible.controller.host:
         name: "ansible-1"
         inventory: "Demo Inventory"
         state: present
@@ -193,7 +193,7 @@ tee /tmp/setup.yml << EOF
           ansible_host: "{{ thisaaphostfqdn }}"
 
     - name: Create job template
-      awx.awx.job_template:
+      ansible.controller.job_template:
         name: "{{ item.name }}"
         job_type: "run"
         organization: "Default"
@@ -227,7 +227,7 @@ tee /tmp/setup.yml << EOF
         - { playbook: 'create_windows_vm_demo.yml', name: 'Create Windows Server 2022 VM' }
 
     - name: Create job template
-      awx.awx.job_template:
+      ansible.controller.job_template:
         name: "{{ item.name }}"
         job_type: "run"
         organization: "Default"
@@ -245,7 +245,7 @@ tee /tmp/setup.yml << EOF
         - { playbook: 'create_rhel_vm_demo.yml', name: 'Create RHEL VM' }
 
     - name: Create job template
-      awx.awx.job_template:
+      ansible.controller.job_template:
         name: "Cloud Report"
         job_type: "run"
         organization: "Default"
@@ -261,7 +261,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Launch Windows VM into Azure
-      awx.awx.job_launch:
+      ansible.controller.job_launch:
         job_template: "Create Windows Server 2022 VM"
         controller_username: "{{ username }}"
         controller_password: "{{ admin_password }}"
@@ -270,7 +270,7 @@ tee /tmp/setup.yml << EOF
       register: job_output
 
     - name: Wait for job
-      awx.awx.job_wait:
+      ansible.controller.job_wait:
         job_id: "{{ job_output.id }}"
         timeout: 3600
         controller_username: "{{ username }}"
@@ -279,7 +279,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Launch RHEL VM into Azure
-      awx.awx.job_launch:
+      ansible.controller.job_launch:
         job_template: "Create RHEL VM"
         controller_username: "{{ username }}"
         controller_password: "{{ admin_password }}"
@@ -288,7 +288,7 @@ tee /tmp/setup.yml << EOF
       register: job_output_rhel
 
     - name: Wait for job
-      awx.awx.job_wait:
+      ansible.controller.job_wait:
         job_id: "{{ job_output_rhel.id }}"
         timeout: 3600
         controller_username: "{{ username }}"
@@ -297,7 +297,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Add an Azure Inventory
-      awx.awx.inventory:
+      ansible.controller.inventory:
         name: "Azure Inventory"
         description: "Our Azure Inventory"
         organization: "Default"
@@ -308,7 +308,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Add an Azure Inventory Source
-      awx.awx.inventory_source:
+      ansible.controller.inventory_source:
         name: "Azure Source"
         description: "Source for the Azure Inventory"
         inventory: "Azure Inventory"
@@ -330,7 +330,7 @@ tee /tmp/setup.yml << EOF
         validate_certs: false
 
     - name: Update a single inventory source
-      awx.awx.inventory_source_update:
+      ansible.controller.inventory_source_update:
         name: "Azure Source"
         inventory: "Azure Inventory"
         organization: "Default"
