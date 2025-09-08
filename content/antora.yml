@@ -6,7 +6,7 @@ nav:
 
 asciidoc:
   attributes:
-    lab_name: "Hybrid cloud automation: Azure Cloud operations"
+    lab_name: "Hybrid cloud automation: Azure Cloud Optimization"
     release-version: master
     page-pagination: true
     my_var: "foo"
