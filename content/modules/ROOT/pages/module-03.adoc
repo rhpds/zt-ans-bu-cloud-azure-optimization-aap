@@ -1,164 +1,246 @@
-= Lab Guide: Deploying Applications on Azure VMs
-:toc:
+= Lab Guide: Building an Azure Optimization Workflow
+:notoc:
 :toc-title: Table of Contents
 :sectnums:
 :icons: font
 
-_A guide to deploying applications to virtual machines in Microsoft Azure using the Ansible Automation Platform._
-
-*Estimated time to complete: 15 minutes*
+_A guide to creating a workflow to filter instances and stop them using Ansible Automation Platform in a Microsoft Azure environment._
 
 ---
 
-**Lab Overview**
+== Lab Briefing
 
-In this final challenge, you will create and run a job template to deploy an application to a Red Hat Enterprise Linux (RHEL) virtual machine on Azure. You will then verify the installation using an ad-hoc command.
+This section provides an overview of the lab challenge and instructions for getting started.
+
+=== Challenge Summary
+
+In this challenge, you will create a **workflow**. Public cloud environments are often used by many different teams, and by using automation, you can create workflows to help enforce organizational policies.
+
+image::https://github.com/IPvSean/pictures_for_github/blob/master/full_workflow.png?raw=true[Example of a completed workflow, opts="border"]
+
+=== Infrastructure Optimization
+
+While a lot of cloud automation focuses on provisioning and de-provisioning, we can also use automation to help tame our public cloud environments and keep them under control. This is often called Day-2 operations or infrastructure optimization.
+
+image::https://github.com/IPvSean/pictures_for_github/blob/master/optimize_circle.png?raw=true[The cycle of infrastructure optimization, opts="border"]
+
+This can include tasks like identifying non-compliant resources, scheduling instances to be turned off outside of business hours, or finding and removing orphaned resources.
+
+image::../assets/example_optimization.png[Example of identifying a non-compliant EC2 instance, opts="border"]
+
+image::../assets/example2_optimization.png[Example of scheduling an instance to be stopped, opts="border"]
+
+=== Getting Started
+
+That is the end of your challenge briefing! Please click the green **Start** button in the bottom right corner of this window if the lab has not already started.
+
+image:https://github.com/IPvSean/pictures_for_github/blob/master/start_button.png?raw=true[Start Button, 100, opts="border"]
 
 ---
 
-== Task 1: Create the "Deploy Application" Job Template
+== Lab Guide: Hands-On Tasks
 
-First, you will create a job template with a survey that allows a user to select which application to install and where.
+*Estimated time to complete: 10 minutes*
 
-. **Navigate to the Ansible Automation Platform UI.**
+In this third challenge, you will create a link:https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html[workflow] that uses your existing job template to find specific instances and then performs an action on them.
+
+=== Task 1: Log into Automation Controller
+
+First, you will log in to the automation controller to begin the lab exercises.
+
+.   **Navigate to the Automation Controller UI.**
 +
-Click on the **Ansible Automation Platform** tab at the top of your lab window.
+    Click on the **Automation Controller** tab at the top of your lab window.
 
-. **Log in with the provided credentials.**
+.   **Log in with the provided credentials.**
 +
 [cols="1,2a"]
 |===
-| Parameter | Value
 | Username | `admin`
 | Password | `ansible123!`
 |===
 
-. **Navigate to the Templates page.**
-+
-Expand the `Automation Execution` menu on the left.
-`Automation Execution` -> `Templates`.
+After logging in, you will land on the main dashboard.
 
-. **Initiate the creation of a new job template.**
-+
-Click the `+ Create Template` then scroll down and click `Create job template`
-+
+=== Task 2: Create the "Stop Instances" Job Template
 
-. **Enter the job template details.**
+You will start by creating a job template whose purpose is to stop Azure virtual machines.
+
+.   **Navigate to the Templates page.**
 +
-Fill out the form with the following information:
+    In the left navigation menu, go to **Resources** → **Templates**.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/job_templates.png?raw=true[Templates link in navigation menu, 200, opts="border"]
+
+.   **Create a new job template.**
++
+    **Click** the blue **Add** button and select **Add job template**.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/add_job_template.png?raw=true[Add job template button, 200, opts="border"]
+
+.   **Enter the job template details.**
++
+    Fill out the form with the following information:
 +
 [cols="1,1"]
 |===
-| Parameter | Value
-| Name | `Deploy Application`
-| Job Type | `Run`
-| Inventory | `Azure Inventory`
-| Project | `Product Demos Project`
-| Playbook | `linux/deploy_application.yml`
-| Execution Environment | `Default execution environment`
-| Credentials | `RHEL on Azure`
+| Parameter               | Value
+| Name                    | `Stop instances`
+| Job Type                | `Run`
+| Inventory               | `Demo Inventory`
+| Project                 | `Azure Demos Project`
+| Execution Environment   | `Microsoft Azure Execution Environment`
+| Playbook                | `project/change_state_rhel_vm_demo.yml`
+| Credentials             | `azure_credential`
 |===
-
-. **Save the job template.**
 +
-Scroll to the bottom, click `Create job template`.
+TIP: To find the `azure_credential`, you may need to filter the *Credential Type* to `Microsoft Azure Resource Manager`.
 
-. **Add the first survey question.**
+.   **Save the job template.**
 +
-Navigate to the `Survey` tab and click the blue `Create survey question` button. Configure the first question as follows:
+    **Click** the blue **Save** button.
+
+NOTE: The Ansible Playbooks for this lab are sourced from this link:https://github.com/ansible-cloud/azure-demos[project on GitHub]. This playbook uses the `azure.azcollection.azure_rm_virtualmachine` module to change the state of VMs passed to it via the `vm_name_list` variable.
++
+[source,yaml]
+----
+- name: toggle VM state
+  azure.azcollection.azure_rm_virtualmachine:
+    resource_group: "{{ resource_group_name }}"
+    name: "{{ item }}"
+    state: "{{ input_state | default('absent') }}"
+  loop: "{{ vm_name_list }}"
+----
+
+=== Task 3: Build the Azure Optimization Workflow
+
+Now, you will combine the template from the previous lab (`Retrieve instances by tag`) with the new `Stop instances` template into a single workflow.
+
+.   **Navigate to the Templates page and initiate workflow creation.**
++
+    Go to **Resources** → **Templates**, **click** the blue **Add** button, and select **Add workflow template**.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/add_workflow.png?raw=true[Add workflow template button, 200, opts="border"]
+
+.   **Enter the workflow details.**
 +
 [cols="1,1"]
 |===
-| Parameter | Value
-| Question | `Enter the Linux Host you want to deploy the application to`
-| Answer variable name | `_hosts`
-| Answer type | `Text`
-| Default answer | `RHEL-ansible`
+| Parameter    | Value
+| Name         | `Azure Workflow`
+| Organization | `Default`
 |===
 +
-Click `Create survey question`.
+    **Click** **Save**. The Workflow Visualizer will open.
 
-. **Add the second survey question.**
+.   **Add the first node (Retrieve Instances).**
 +
-On the survey page, click the blue `Create survey question` button. Configure the second question as follows:
-+
-[cols="1,1"]
-|===
-| Parameter | Value
-| Question | `Which application do you want to install?`
-| Answer variable name | `application`
-| Answer type | `Multiple Choice (single select)`
-| Multiple Choice Options | `nginx`, `gdb`, `httpd`, `nano`
-|===
-+
-NOTE: After entering the options, select the radio button next to `nginx` to make it the `Default option`.Click `Create survey question`.
-
-. **Enable the survey.**
-+
-You must **enable the survey** by clicking the toggle switch at the top of the survey page. The text will change from `SURVEY Disabled` to `SURVEY enabled`.
-
-== Task 2: Run the Job Template
-
-Now you will launch the template and use the survey to deploy an application.
-
-. **Navigate to the Templates page.**
-+
-Expand the `Automation Execution` menu on the left.
-`Automation Execution` -> `Templates`.
-
-. **Launch the "Deploy Application" job template.**
-+
-Find the `Deploy Application` template and click `🚀 Launch template` icon.
-
-. **Complete the survey and run the job.**
-+
-You will be prompted with the survey. The default values are correct (`RHEL-ansible` for the host, and `nginx` for the application). Accept the default answers by clicking `Next`, then click `Finish` to run the job.
-
-. **Monitor the job progress.** and observe the output.
-+
-The job will take a few moments to complete. The output will confirm that `nginx` was installed on the `RHEL-ansible` host.
-
-== Task 3: Verify Installation with an Ad-Hoc Command
-
-Finally, you will run an ad-hoc command to confirm that the `nginx` service was installed and is running.
-
-. **Navigate to the Azure Inventories**
-+
-Expand the `Automation Execution` menu on the left.
-`Automation Execution` -> `Infrastructure` -> `Inventories`.
-
-. **Select the Azure Inventory.**
-+
-Click on the inventory named `Azure Inventory`. Then select the `Hosts` tab.
-
-. **Select the host and initiate the command.**
-+
-Select the checkbox next to `RHEL-ansible`, then click the `Run Command` button.
-
-. **Configure the ad-hoc command.**
-+
-A wizard will appear. Fill it out as follows:
+    **Click** the green **START** button. Configure the first step as follows:
 +
 --
-a. *Details View:* From the *Module* dropdown, select `service`. In the *Arguments* field, enter `name=nginx`. Click `Next`.
-b. *Execution Environment View:* Select `Default execution environment` from the dropdown. Click `Next`.
-c. *Credential View:* Select `RHEL on Azure` from the dropdown. Click `Next`.
+a.  **Node Type:** `Job Template`
+b.  **Job Template:** Select `Retrieve instances by tag`. Click **Next**.
+c.  **Survey:** In the `Provide specified tag` field, enter `os:windows`.
++
+image::../assets/select_windows.png[Entering the survey value, opts="border"]
+d.  Click **Next**, then **Save** to add the node.
 --
 
-. **Launch the ad-hoc command.**
+.   **Add the second node (Stop Instances).**
 +
-On the *Review* screen, click Click `Finish` to launch the ad-hoc command.
-
-. **Observe the output.**
+    **Hover** over the `Retrieve instances by tag` node, **click** the **+** icon, and select *Add node*.
 +
-The job will complete in a few moments. The output will show details about the `nginx` service on the host, confirming its status.
+image:https://github.com/IPvSean/pictures_for_github/blob/master/add_new_node.png?raw=true[Add new node button, 100, opts="border"]
++
+    Configure it as follows:
++
+--
+a.  **Run:** Select `On Success`. Click **Next**.
+b.  **Job Template:** Select `Stop instances`.
+c.  Click **Save**.
+--
 
-== Conclusion
+.   **Save the workflow.**
++
+    In the top right corner of the Visualizer, **click** **Save**.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/save_workflow.png?raw=true[Save workflow button, 300, opts="border"]
 
-Thank you for taking the time to learn about automating cloud operations tasks in Azure using the Red Hat Ansible Automation Platform!
+=== Task 4: Launch the Workflow
 
-In this lab, you have seen how automation can be used to deploy applications and how ad-hoc commands can perform quick checks on target hosts. These same principles can be easily applied to other cloud environments.
+Now you are ready to run the complete workflow.
+
+.   **Navigate to the Templates page.**
++
+    Go to **Resources** → **Templates**.
+
+.   **Launch the workflow.**
++
+    Find the `Azure Workflow` in the list and **click** the **Launch** icon (🚀).
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true[Launch Job Icon, 80, opts="border"]
+
+.   **Monitor the visualizer.**
++
+    The workflow visualizer will show the real-time progress. The workflow will:
++
+.   Run the `Retrieve instances by tag` node to identify the `WIN-ansible` instance.
+.   Upon success, run the `Stop instances` node, which will turn off the instance identified in the first step.
+
+=== Task 5: Verify the Instance is Stopped
+
+Finally, you will confirm the result using one of the following methods.
+
+==== Option 1: By Updating the Azure Inventory Source
+
+.   **Navigate to the inventory source.**
++
+    In the left navigation menu, go to **Resources** → **Inventories**. Select `Azure Inventory`, then select the **Sources** tab.
+
+.   **Sync the inventory.**
++
+    **Click** on **Sync all** and wait for the status to show **Successful**.
+
+.   **Check the hosts.**
++
+    Switch to the **Hosts** tab. You should now see that the `WIN-ansible` host is no longer in the inventory (as it is no longer running).
+
+==== Option 2: By Validating in the Azure Portal
+
+.   **Navigate to the Azure Portal.**
++
+    **Click** on the **Azure Portal** tab to open it in a new browser window and log in with the credentials from the **Azure Portal Account** tab.
++
+WARNING: Be careful to avoid extra spaces when copying and pasting the credentials.
+
+.   **Go to the Virtual machines service.**
++
+    In the top search bar, search for and select `Virtual machines`.
++
+image::../assets/virtual_machines.png[Azure portal search for virtual machines, opts="border"]
+
+.   **Check the instance status.**
++
+    You should see that the `RHEL-ansible` instance is still running, while the Windows instance has been successfully stopped and deallocated.
++
+image::../assets/virtual_machine_example.png[Instance status in Azure portal, opts="border"]
+
+---
+
+== Why Cloud Optimization is Important
+
+You have successfully completed this challenge. This simple lab demonstrates a powerful concept for managing cloud costs and resources. Automation workflows can help you:
+
+* **Turn off unused resources:** Automatically shut down instances that are no longer needed.
+* **Right-size cloud resources:** Identify over-provisioned instances and adjust them.
+* **Recover orphaned resources:** Find and remove resources left behind by failed processes.
+
+Imagine scheduling a workflow to run nightly, searching for any development instances left running for more than a few hours. This gives cloud teams peace of mind that their infrastructure is not incurring unnecessary charges.
+
+== Next Steps
+
+Press the `Check` button below to complete the challenge.
 
 == Troubleshooting
 
-If you have encountered an issue or have noticed something not quite right, please open an issue with the lab maintainers.
+If you have encountered an issue or have noticed something not quite right, please link:https://github.com/ansible/instruqt/issues/new?title=Issue+with+Ansible+Hybrid+Cloud+Automation+-+Infrastructure+visibility&assignees=ipvsean[n contro%K
