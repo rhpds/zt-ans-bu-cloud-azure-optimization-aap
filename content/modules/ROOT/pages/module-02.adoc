@@ -1,0 +1,140 @@
+= Lab Guide: Automating OS Patching on Azure VMs
+:toc:
+:toc-title: Table of Contents
+:sectnums:
+:icons: font
+
+_A guide to creating a Job Template to perform and report on OS patching for virtual machines in Microsoft Azure._
+
+*Estimated time to complete: 15 minutes*
+
+---
+
+**Lab Overview**
+
+In this challenge, you will create a Job Template to automate the patching of a Red Hat Enterprise Linux (RHEL) server running on Azure. You will also configure the job to generate an HTML report that can be viewed from a web browser.
+
+---
+
+== Task 1: Create and Run the Patching Job Template
+
+You will start by creating a job template, adding a survey to make it interactive, and then running it to patch the Linux host.
+
+. **Navigate to the Ansible Automation Platform UI.**
++
+Click on the **Ansible Automation Platform** tab at the top of your lab window.
+
+. **Log in with the provided credentials.**
++
+[cols="1,2a"]
+|===
+| Parameter | Value
+| Username | `admin`
+| Password | `ansible123!`
+|===
+
+. **Navigate to the Templates page.**
++
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
+
+. **Initiate the creation of a new job template.**
++
+Click the `+ Create Template` then scroll down and click `Create job template`
+
+. **Enter the job template details.**
++
+Fill out the form with the following information:
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Name | `Linux Patching`
+| Job Type | `**RUN**`
+| Inventory | `Azure Inventory`
+| Project | `Product Demos Project`
+| Playbook | `linux/patching.yml`
+| Execution Environment | `Default execution environment`
+| Credentials | `RHEL on Azure`
+|===
++
+TIP: To select the credential, click in the text field or on the drop down icon, then select the `RHEL on Azure` credential.
+
+. **Save the job template.**
++
+Scroll to the bottom, click `Create job template`.
+
+. **Add the first survey question.**
++
+Navigate to the `Survey` tab and click the blue `Create survey question` button. Configure the first question as follows:
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Question | `Enter the Linux Host you want to patch`
+| Answer variable name | `_hosts`
+| Answer type | `Text`
+| Default answer | `RHEL-ansible`
+|===
++
+Click `Create survey question`.
+
+. **Add the second survey question.**
++
+On the survey page, click the blue `Create survey question` button. Configure the second question as follows:
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Question | `Where should the report be generated?`
+| Answer variable name | `report_server`
+| Answer type | `Text`
+| Default answer | `RHEL-ansible`
+|===
++
+Click `Create survey question`.
+
+. **Enable the survey.**
++
+You must **enable the survey** by clicking the toggle switch at the top of the survey page. The text will change from `SURVEY Disabled` to `SURVEY enabled`.
+
+. **Launch the template.**
++
+Navigate back to the **Templates** page. Find the `Linux Patching` template and click `🚀 Launch template` icon.
+
+. **Complete the survey and run the job.**
++
+You will be prompted with the survey questions. Accept the default answers by clicking `Next`, then click `Finish` to run the job.
+
+. **Observe the output.**
++
+The job will run and apply any available patches to the `RHEL-ansible` host. The output will contain URLs for the reports, which you will view in the next task.
+
+---
+
+== Task 2: View the Patching Report
+
+The automation job generates HTML reports detailing the available patches and what actions were taken.
+
+. **Locate the report URLs in the job output.**
++
+The output from the `Linux Patching` job will contain URLs for the generated reports. They will look similar to this:
++
+* `http://<IP_ADDRESS>/reports/linux.html`
+* `http://<IP_ADDRESS>/reports/linuxpatch.html`
+
+. **View the reports.**
++
+Copy and paste each URL into a new browser tab to view them. The `linuxpatch.html` report provides a detailed list of all package updates that were installed or removed.
+
+. **Re-run the job and observe the changes.**
++
+Launch the `Linux Patching` job a second time. Once it completes, refresh the report URLs in your browser. You will see that the report has been updated with the latest information, confirming that no new patches were needed.
+
+NOTE: While this challenge focuses on Linux, Ansible Automation Platform can be used to perform Windows patching with similar workflows.
+
+---
+
+== Next Steps
+
+You have successfully completed this challenge. Press the `Next` button in your lab environment to proceed to the next challenge.

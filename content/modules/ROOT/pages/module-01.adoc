@@ -1,0 +1,177 @@
+= Lab Guide: Day-2 Operations with Azure Dynamic Inventory
+:toc:
+:toc-title: Table of Contents
+:sectnums:
+:icons: font
+
+_A guide to understanding Day-2 cloud operations and automating common use cases for Microsoft Azure._
+
+*Estimated time to complete: 15 minutes*
+
+---
+
+**Lab Overview**
+
+Welcome to the `Ansible Hybrid Cloud Automation - Cloud Operations` lab. In this guide, you will learn about a pre-configured Dynamic Inventory for Microsoft Azure and see how it uses tags to manage cloud resources.
+
+---
+
+== Task 1: Understanding Credentials
+
+First, you will log in to the Ansible Automation Platform and examine the pre-configured credentials for this lab.
+
+. **Navigate to the Ansible Automation Platform UI.**
++
+Click on the **Ansible Automation Platform** tab at the top of your lab window.
+
+. **Log in with the provided credentials.**
++
+[cols="1,2a"]
+|===
+| Parameter | Value
+| Username | `admin`
+| Password | `ansible123!`
+|===
+
+. **Examine the pre-configured credentials.**
++
+Credentials are used to authenticate to machines, inventory sources, and version control systems. In this lab, we use three different credentials:
++
+* **RHEL on Azure:** An SSH key for the Red Hat Enterprise Linux host.
+* **Windows on Azure:** Credentials for the Windows Server host.
+* **azure_credential:** A Microsoft Azure credential for performing actions on the cloud, like creating a virtual network or stopping an instance.
++
+To view them, Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Infrastructure` -> `Credentials`.
+
+NOTE: Credential keys are encrypted. Once entered into the Ansible Automation Platform, no one, including administrators, can view the sensitive values.
+
+---
+
+== Task 2: Synchronize the Azure Inventory
+
+Next, you will synchronize the dynamic inventory to ensure the Ansible Automation Platform has the latest host information from Azure.
+
+. **Navigate to the Inventories menu.**
++
+To view them, Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Infrastructure` -> `Inventories`.
+
+. **Select the Azure Inventory.**
++
+Click on the inventory named `Azure Inventory`.
+
+. **Synchronize the inventory source.**
++
+Select the `Sources` tab and click the `Rocket Launcher Rocket 🚀 icon` button on the right side of the screen. This will update the host list from Azure.
+
+. **View the updated hosts.**
++
+Wait for the synchronization job status to show **Successful**, then click on the `Hosts` tab to view the discovered Azure virtual machines.
+
+---
+
+== Task 3: Create a Job Template to Retrieve VM Information
+
+Now, you will create a job template to run a playbook that gathers and displays information about your Azure virtual machines.
+
+. **Navigate to the Templates page.**
++
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
+
+. **Initiate the creation of a new job template.**
++
+Click the `+ Create Template` then scroll down and click `Create job template`
+
+. **Enter the job template details.**
++
+Fill out the form with the following information:
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Name | `Retrieve virtual machine information`
+| Inventory | `Azure Inventory`
+| Project | `Cloud Visibility Project`
+| Playbook | `playbooks/retrieve_vms.yml`
+| Execution Environment | `Microsoft Azure Execution Environment`
+| Credentials | `azure_credential`
+|===
++
+TIP: To select the `azure_credential`, click in the text field or on the drop down icon, then select `Microsoft Azure Resource Manager`.
+
+. **Save and launch the job template.**
++
+Scroll to the bottom, click `Create job template`, and then `🚀 Launch template`.
+
+. **Observe the output.**
++
+The job output will display information retrieved from your Azure VMs.
+
+NOTE: In a highly dynamic environment, the Azure inventory can change often. It's important to trigger an inventory synchronization before running jobs that rely on that inventory. We will address this in the next task.
+
+---
+
+== Task 4: Build a Workflow to Synchronize the Inventory and Retrieve VM Information
+
+To ensure you are always working with the latest inventory, you will create a workflow that first syncs the Azure inventory and then runs the job template to retrieve VM information.
+
+. **Navigate to the Templates page and initiate workflow creation.**
++
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
+
+Click the `+ Create Template` then scroll down and click `Create workflow job template`
+
+. **Enter the workflow details.**
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Name | `WORKFLOW - Retrieve virtual machines information`
+|===
++
+Click `Create workflow job template`. The Workflow Visualizer will open.
+
+. **Add the first step (Inventory Sync).**
++
+Click the `+ Add step` button. In the *Add step* dialog, configure the first step:
++
+--
+a. `Node Type` Select `Inventory Source Sync`.
+b. `Inventory Source` Select `Azure Source`.
+c. Click `Next`, then `Finish`
+--
++
+image::https://github.com/nmartins0611/zt-ans-bu-cloud-azure-operations-aap/blob/main/content/modules/ROOT/assets/images/azure-wf-inventorynode1.png[Adding an inventory source sync node, opts="border"]
+
+
+. **Add the second step (Job Template).**
++
+Cick on the elipses (3-dots) at the end of `Azure Source` , and select `+ Add step and link`. Configure it as follows:
++
+image::https://github.com/nmartins0611/zt-ans-bu-cloud-azure-operations-aap/blob/main/content/modules/ROOT/assets/images/azure-wf-inventorynode2.png[Adding a second node to the workflow, opts="border"]
++
+--
+a. `Node Type` Select `Job Template`.
+b. `Job Template` Select `Retrieve virtual machine information`.
+c. `Status` Select `Run On Success`
+d. Click `Next`, then `Finish`
+e. Click `Save` at the top left corner of the Visualizer.
+--
+Your completed workflow is now ready.
++
+image::https://github.com/nmartins0611/zt-ans-bu-cloud-azure-operations-aap/blob/main/content/modules/ROOT/assets/images/azure-wf-jobtemplatenode1.png[Completed Azure information workflow, opts="border"]
+
+. **Launch the workflow.**
++
+Navigate back to the `Templates` page and launch the `WORKFLOW - Retrieve virtual machines information` workflowtemplate. Once it has ran, you can click on each node in the visualizer to see the output for that specific step.
+
+This workflow ensures your inventory is always up-to-date before you attempt to gather information from it.
+
+---
+
+== Next Steps
+
+You have successfully completed this challenge. Press the `Next` button in your lab environment to proceed to the next challenge.
