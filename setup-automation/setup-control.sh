@@ -62,11 +62,11 @@ tee /tmp/setup.yml << EOF
         credential_type: Microsoft Azure Resource Manager
         inputs:
           subscription: "{{ azure_subscription }}"
+          secret: "{{ azure_password }}"
+          client: "{{ azure_client_id }}"
           tenant: "{{ azure_tenant }}"
-          username: "{{ azure_client_id }}"
-          password: "{{ azure_password  }}"
-          client: "{{ azure_password }}"
-          secret: "{{ lookup('env', 'INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_SPN_PASSWORD') }}"
+          # username: "{{ lookup('env', 'INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_USERNAME') }}"
+          # password: "{{ lookup('env', 'INSTRUQT_AZURE_SUBSCRIPTION_AAPAZURELAB_PASSWORD') }}"
       register: controller_try
       retries: 5
       until: controller_try is not failed
