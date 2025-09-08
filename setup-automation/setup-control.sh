@@ -252,32 +252,6 @@ tee /tmp/setup.yml << EOF
         controller_host: "https://{{ ansible_host }}"
         validate_certs: false
 
-    # - name: Launch VMs into Azure
-    #   ansible.controller.job_launch:
-    #     job_template: "Create Windows Server 2022 VM"
-    #     controller_username: "{{ username }}"
-    #     controller_password: "{{ admin_password }}"
-    #     controller_host: "https://{{ ansible_host }}"
-    #     validate_certs: false
-    #   register: job_output
-
-    # - name: Wait for job
-    #   ansible.controller.job_wait:
-    #     job_id: "{{ job_output.id }}"
-    #     timeout: 3600
-    #     controller_username: "{{ username }}"
-    #     controller_password: "{{ admin_password }}"
-    #     controller_host: "https://{{ ansible_host }}"
-    #     validate_certs: false
-
-    # - name: Launch VMs into Azure
-    #   ansible.controller.job_launch:
-    #     job_template: "Create RHEL VM"
-    #     controller_username: "{{ username }}"
-    #     controller_password: "{{ admin_password }}"
-    #     controller_host: "https://{{ ansible_host }}"
-    #     validate_certs: false
-
     - name: Add an Azure Inventory
       ansible.controller.inventory:
         name: "Azure Inventory"
@@ -306,6 +280,32 @@ tee /tmp/setup.yml << EOF
             - computer_name
           compose:
             ansible_host: public_ipv4_address[0]
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+
+    - name: Launch VMs into Azure
+      ansible.controller.job_launch:
+        job_template: "Create Windows Server 2022 VM"
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+      register: job_output
+
+    - name: Wait for job
+      ansible.controller.job_wait:
+        job_id: "{{ job_output.id }}"
+        timeout: 
+        controller_username: "{{ username }}"
+        controller_password: "{{ admin_password }}"
+        controller_host: "https://{{ ansible_host }}"
+        validate_certs: false
+
+    - name: Launch VMs into Azure
+      ansible.controller.job_launch:
+        job_template: "Create RHEL VM"
         controller_username: "{{ username }}"
         controller_password: "{{ admin_password }}"
         controller_host: "https://{{ ansible_host }}"
