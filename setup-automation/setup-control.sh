@@ -5,7 +5,28 @@ systemctl disable systemd-tmpfiles-setup.service
 
 nmcli connection add type ethernet con-name enp2s0 ifname enp2s0 ipv4.addresses 192.168.1.10/24 ipv4.method manual connection.autoconnect yes
 nmcli connection up enp2s0
-echo "192.168.1.10 control.lab control controller" >> /etc/hosts
+echo "192.168.1.10 control.lab control controller ansible-1" >> /etc/hosts
+
+RHEL_SSH_DIR="/home/rhel/.ssh"
+RHEL_PRIVATE_KEY="$RHEL_SSH_DIR/id_rsa"
+RHEL_PUBLIC_KEY="$RHEL_SSH_DIR/id_rsa.pub"
+
+if [ -f "$RHEL_PRIVATE_KEY" ]; then
+    echo "SSH key already exists for rhel user: $RHEL_PRIVATE_KEY"
+else
+    echo "Creating SSH key for rhel user..."
+    sudo -u rhel mkdir -p /home/rhel/.ssh
+    sudo -u rhel chmod 700 /home/rhel/.ssh
+    sudo -u rhel ssh-keygen -t rsa -b 4096 -C "rhel@$(hostname)" -f /home/rhel/.ssh/id_rsa -N "" -q
+    sudo -u rhel chmod 600 /home/rhel/.ssh/id_rsa*
+    
+    if [ -f "$RHEL_PRIVATE_KEY" ]; then
+        echo "SSH key created successfully for rhel user"
+    else
+        echo "Error: Failed to create SSH key for rhel user"
+    fi
+fi
+
 
 ########
 ## install python3 libraries needed for the Cloud Report
@@ -40,6 +61,25 @@ tee /tmp/setup.yml << EOF
     thisaaphostfqdn: $THISAAPHOST
 
   tasks:
+
+    - name: Add SSH Controller credential to automation controller
+      ansible.controller.credential:
+        name: SSH Controller Credential
+        description: Creds to be able to SSH the contoller_host
+        organization: "Default"
+        state: present
+        credential_type: "Machine"
+        controller_host: "https://localhost"
+        controller_username: admin
+        controller_password: ansible123!
+        validate_certs: false
+        inputs:
+          username: rhel
+          ssh_key_data: "{{ lookup('file','/home/rhel/.ssh/id_rsa') }}"
+      register: controller_try
+      retries: 10
+      until: controller_try is not failed
+  
     - name: Set base url
       ansible.controller.settings:
         name: AWX_COLLECTIONS_ENABLED
