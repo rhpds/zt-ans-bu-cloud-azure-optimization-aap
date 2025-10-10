@@ -284,22 +284,6 @@ tee /tmp/setup.yml << EOF
       with_items:
         - { playbook: 'create_rhel_vm_demo.yml', name: 'Create RHEL VM' }
 
-    - name: Create job template
-      ansible.controller.job_template:
-        name: "Cloud Report"
-        job_type: "run"
-        organization: "Default"
-        inventory: "Demo Inventory"
-        project: "Cloud Visibility Project"
-        playbook: "playbooks/cloud_report_azure.yml"
-        credentials:
-          - "azure_credential"
-        state: "present"
-        controller_username: "{{ username }}"
-        controller_password: "{{ admin_password }}"
-        controller_host: "https://{{ ansible_host }}"
-        validate_certs: false
-
     - name: Launch Windows VM into Azure
       ansible.controller.job_launch:
         job_template: "Create Windows Server 2022 VM"
