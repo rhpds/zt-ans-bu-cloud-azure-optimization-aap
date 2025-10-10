@@ -16,7 +16,7 @@ This section provides an overview of the lab challenge and instructions for gett
 
 In this challenge, you will create a **workflow**. Public cloud environments are often used by many different teams, and by using automation, you can create workflows to help enforce organizational policies.
 
-image::https://github.com/IPvSean/pictures_for_github/blob/master/full_workflow.png?raw=true[Example of a completed workflow, opts="border"]
+image::../assets/images/full_workflow.png?raw=true[Example of a completed workflow, opts="border"]
 
 === Infrastructure Optimization
 
@@ -26,36 +26,35 @@ image::https://github.com/IPvSean/pictures_for_github/blob/master/optimize_circl
 
 This can include tasks like identifying non-compliant resources, scheduling instances to be turned off outside of business hours, or finding and removing orphaned resources.
 
-image::../assets/example_optimization.png[Example of identifying a non-compliant EC2 instance, opts="border"]
+Two examples of infrastructure optimization are shown below
 
-image::../assets/example2_optimization.png[Example of scheduling an instance to be stopped, opts="border"]
+image::../assets/images/example_optimization.png?raw=true[Example of identifying a non-compliant VM instance, opts="border"]
 
-=== Getting Started
+image::../assets/images/example2_optimization.png?raw=true[Example of scheduling an instance to be stopped, opts="border"]
 
-That is the end of your challenge briefing! Please click the green **Start** button in the bottom right corner of this window if the lab has not already started.
-
-image:https://github.com/IPvSean/pictures_for_github/blob/master/start_button.png?raw=true[Start Button, 100, opts="border"]
+This concludes your lab briefing. Please move forward.
 
 ---
 
 == Lab Guide: Hands-On Tasks
 
-*Estimated time to complete: 10 minutes*
+*Estimated time to complete: 20 minutes*
 
-In this third challenge, you will create a link:https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html[workflow] that uses your existing job template to find specific instances and then performs an action on them.
+In this third challenge, you will create a link:https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/latest/html/using_automation_execution/controller-workflow-job-templates[workflow] that uses your existing job template to find specific instances and then performs an action on them.
 
-=== Task 1: Log into Automation Controller
+=== Task 1: Log into Ansible Automation Platform
 
-First, you will log in to the automation controller to begin the lab exercises.
+First, you will log in to the Ansible Automation Platform to begin the lab exercises.
 
-.   **Navigate to the Automation Controller UI.**
+. **Navigate to the Ansible Automation Platform UI.**
 +
-    Click on the **Automation Controller** tab at the top of your lab window.
+Click on the **Ansible Automation Platform** tab at the top of your lab window.
 
-.   **Log in with the provided credentials.**
+. **Log in with the provided credentials.**
 +
 [cols="1,2a"]
 |===
+| Parameter | Value
 | Username | `admin`
 | Password | `ansible123!`
 |===
@@ -66,19 +65,17 @@ After logging in, you will land on the main dashboard.
 
 You will start by creating a job template whose purpose is to stop Azure virtual machines.
 
-.   **Navigate to the Templates page.**
+. **Navigate to the Templates page.**
 +
-    In the left navigation menu, go to **Resources** → **Templates**.
-+
-image:https://github.com/IPvSean/pictures_for_github/blob/master/job_templates.png?raw=true[Templates link in navigation menu, 200, opts="border"]
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
 
-.   **Create a new job template.**
+. **Create the new job template.**
 +
-    **Click** the blue **Add** button and select **Add job template**.
+Click the `+ Create Template` then scroll down and click `Create job template`
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/add_job_template.png?raw=true[Add job template button, 200, opts="border"]
 
-.   **Enter the job template details.**
+. **Enter the job template details.**
 +
     Fill out the form with the following information:
 +
@@ -87,21 +84,25 @@ image:https://github.com/IPvSean/pictures_for_github/blob/master/add_job_templat
 | Parameter               | Value
 | Name                    | `Stop instances`
 | Job Type                | `Run`
-| Inventory               | `Demo Inventory`
+| Inventory               | `Azure Inventory`
 | Project                 | `Azure Demos Project`
-| Execution Environment   | `Microsoft Azure Execution Environment`
 | Playbook                | `project/change_state_rhel_vm_demo.yml`
+| Execution Environment   | `Microsoft Azure Execution Environment`
 | Credentials             | `azure_credential`
 |===
 +
-TIP: To find the `azure_credential`, you may need to filter the *Credential Type* to `Microsoft Azure Resource Manager`.
+TIP: To select the `azure_credential`, click in the text field or on the drop down icon, then select `Microsoft Azure Resource Manager`.
 
-.   **Save the job template.**
+. **Save the job template.**
 +
-    **Click** the blue **Save** button.
+Scroll to the bottom, click `Create job template`.
 
-NOTE: The Ansible Playbooks for this lab are sourced from this link:https://github.com/ansible-cloud/azure-demos[project on GitHub]. This playbook uses the `azure.azcollection.azure_rm_virtualmachine` module to change the state of VMs passed to it via the `vm_name_list` variable.
+. **Understand the playbook execution.**
 +
+This playbook has one task:
+
+It uses the `azure.azcollection.azure_rm_virtualmachine` module to change the state of VMs passed to it via the `vm_name_list` variable.
+
 [source,yaml]
 ----
 - name: toggle VM state
@@ -114,15 +115,18 @@ NOTE: The Ansible Playbooks for this lab are sourced from this link:https://gith
 
 === Task 3: Build the Azure Optimization Workflow
 
-Now, you will combine the template from the previous lab (`Retrieve instances by tag`) with the new `Stop instances` template into a single workflow.
+Now, you will combine the template from the previous lab (`Retrieve instances by tag`) with the new `Stop instances` template into a single workflow template.
 
-.   **Navigate to the Templates page and initiate workflow creation.**
+. **Navigate to the Templates page and initiate workflow creation.**
 +
-    Go to **Resources** → **Templates**, **click** the blue **Add** button, and select **Add workflow template**.
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/add_workflow.png?raw=true[Add workflow template button, 200, opts="border"]
-
-.   **Enter the workflow details.**
+Click the `+ Create Template` then scroll down and click `Create WORKFLOW job template`
++
+image::../assets/images/add_workflow.png?raw=true[Add workflow template button, 200, opts="border"]
++
+. **Enter the workflow details.**
 +
 [cols="1,1"]
 |===
@@ -131,58 +135,54 @@ image:https://github.com/IPvSean/pictures_for_github/blob/master/add_workflow.pn
 | Organization | `Default`
 |===
 +
-    **Click** **Save**. The Workflow Visualizer will open.
-
-.   **Add the first node (Retrieve Instances).**
+**Click** `Create workflow job template`. The Workflow Visualizer will open.
 +
-    **Click** the green **START** button. Configure the first step as follows:
+. **Add the first node (Retrieve Instances).**
++
+**Click** the blue `+ Add Step` button. Configure the first step as follows:
 +
 --
 a.  **Node Type:** `Job Template`
-b.  **Job Template:** Select `Retrieve instances by tag`. Click **Next**.
-c.  **Survey:** In the `Provide specified tag` field, enter `os:windows`.
-+
-image::../assets/select_windows.png[Entering the survey value, opts="border"]
-d.  Click **Next**, then **Save** to add the node.
+b.  **Job Template:** Select `Retrieve instances by tag`. Click `Next`.
+c.  **Survey:** In the `Provide a specific tag` field, enter/select `os:windows`.
+d.  Click `Next`, then `Finish` to add the node.
 --
 
-.   **Add the second node (Stop Instances).**
+. **Add the second node (Stop Instances).**
 +
-    **Hover** over the `Retrieve instances by tag` node, **click** the **+** icon, and select *Add node*.
+**Hover** over the elipsis (3 dots) of the `Retrieve instances by tag` node, **click** the `+ Add Step and link` option.
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/add_new_node.png?raw=true[Add new node button, 100, opts="border"]
-+
-    Configure it as follows:
+Configure it as follows:
 +
 --
-a.  **Run:** Select `On Success`. Click **Next**.
-b.  **Job Template:** Select `Stop instances`.
-c.  Click **Save**.
+a.  **Job Template:** Select `Stop instances`.
+b.  **Status:** Select `Run On Success`. Click `Next`.
+c.  Click `Finish`.
 --
-
-.   **Save the workflow.**
+. **Save the workflow.**
 +
-    In the top right corner of the Visualizer, **click** **Save**.
+In the top left corner of the Visualizer, **click** `Save`.
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/save_workflow.png?raw=true[Save workflow button, 300, opts="border"]
+image::../assets/images/save_workflow.png?raw=true[Save workflow button, 300, opts="border"]
 
 === Task 4: Launch the Workflow
 
 Now you are ready to run the complete workflow.
 
-.   **Navigate to the Templates page.**
+. **Navigate to the Templates page.**
 +
-    Go to **Resources** → **Templates**.
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
 
-.   **Launch the workflow.**
+. **Launch the workflow.**
 +
-    Find the `Azure Workflow` in the list and **click** the **Launch** icon (🚀).
+Find the `Azure Workflow` in the list and click `🚀 Launch template` icon.
 +
 image:https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true[Launch Job Icon, 80, opts="border"]
 
-.   **Monitor the visualizer.**
+. **Monitor the visualizer.**
 +
-    The workflow visualizer will show the real-time progress. The workflow will:
+The workflow visualizer will show the real-time progress. The workflow will:
 +
 .   Run the `Retrieve instances by tag` node to identify the `WIN-ansible` instance.
 .   Upon success, run the `Stop instances` node, which will turn off the instance identified in the first step.
@@ -193,37 +193,29 @@ Finally, you will confirm the result using one of the following methods.
 
 ==== Option 1: By Updating the Azure Inventory Source
 
-.   **Navigate to the inventory source.**
+. **Navigate to the inventory source.**
 +
-    In the left navigation menu, go to **Resources** → **Inventories**. Select `Azure Inventory`, then select the **Sources** tab.
+In the left navigation menu, Expand `Automation Execution` -> `Infrastructure` -> `Inventories`.Select `Azure Inventory`, then select the **Sources** tab.
 
-.   **Sync the inventory.**
+. **Sync the inventory.**
 +
-    **Click** on **Sync all** and wait for the status to show **Successful**.
+**Click** on `Rocket Launcher Rocket 🚀 icon` and wait for the status to show **Successful**.
 
-.   **Check the hosts.**
+. **Check the hosts.**
 +
-    Switch to the **Hosts** tab. You should now see that the `WIN-ansible` host is no longer in the inventory (as it is no longer running).
+Switch to the `Hosts` tab. You should now see that the `WIN-ansible` host is no longer in the inventory (as it is no longer running).
 
-==== Option 2: By Validating in the Azure Portal
+==== Option 2: By Validating in the Cloud Azure tab
 
-.   **Navigate to the Azure Portal.**
+. **Navigate to the Cloud (Azure) tab.**
 +
-    **Click** on the **Azure Portal** tab to open it in a new browser window and log in with the credentials from the **Azure Portal Account** tab.
+**Click** on the `Cloud (Azure)` tab to open it and view the Azure resources.
 +
-WARNING: Be careful to avoid extra spaces when copying and pasting the credentials.
-
-.   **Go to the Virtual machines service.**
+. **Check the instance status.**
 +
-    In the top search bar, search for and select `Virtual machines`.
+You should see that the `RHEL-ansible` instance is still running, while the Windows instance has been successfully stopped and deallocated.
 +
-image::../assets/virtual_machines.png[Azure portal search for virtual machines, opts="border"]
-
-.   **Check the instance status.**
-+
-    You should see that the `RHEL-ansible` instance is still running, while the Windows instance has been successfully stopped and deallocated.
-+
-image::../assets/virtual_machine_example.png[Instance status in Azure portal, opts="border"]
+image::../assets/images/virtual_machine_example.png?raw=true[Instance status in Azure portal, opts="border"]
 
 ---
 
@@ -237,10 +229,7 @@ You have successfully completed this challenge. This simple lab demonstrates a p
 
 Imagine scheduling a workflow to run nightly, searching for any development instances left running for more than a few hours. This gives cloud teams peace of mind that their infrastructure is not incurring unnecessary charges.
 
-== Next Steps
+Thank you for taking the time to learn about automating cloud infrastructure optimization tasks in Azure using the Red Hat Ansible Automation Platform!
 
-Press the `Check` button below to complete the challenge.
+NOTE: The Ansible Playbooks for this lab are sourced from this link:https://github.com/ansible-cloud/azure-demos[project on GitHub]. 
 
-== Troubleshooting
-
-If you have encountered an issue or have noticed something not quite right, please link:https://github.com/ansible/instruqt/issues/new?title=Issue+with+Ansible+Hybrid+Cloud+Automation+-+Infrastructure+visibility&assignees=ipvsean[n contro%K

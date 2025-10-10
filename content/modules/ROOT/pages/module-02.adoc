@@ -15,7 +15,7 @@ This section provides an overview of the lab challenge and instructions for gett
 
 === Challenge Summary
 
-In this challenge, you will use filters to control what information is retrieved from your cloud provider. One of the most common and powerful ways to filter resources is by using **tags**.
+In this challenge, you will use filters to control what information is retrieved from your cloud provider. One of the most common and powerful ways to filter resources is by using `tags`.
 
 Tags are key-value pairs that act as metadata for organizing your cloud resources. Each tag has two parts:
 
@@ -24,27 +24,16 @@ Tags are key-value pairs that act as metadata for organizing your cloud resource
 
 You can use tags to categorize resources by purpose, owner, environment, or any other criteria you define.
 
-=== Getting Started
-
-That is the end of your challenge briefing! Please click the green **Start** button in the bottom right corner of this window if the lab has not already started.
-
-image:https://github.com/IPvSean/pictures_for_github/blob/master/start_button.png?raw=true[Start Button, 100, opts="border"]
-
+This concludes your lab briefing. Please move forward.
 ---
 
 == Lab Guide: Hands-On Tasks
 
 *Estimated time to complete: 10 minutes*
 
-In this second challenge, you will use filters to control what information is retrieved from Azure, specifically by filtering on tags.
+=== Task 1: Log into Ansible Automation Platform
 
-=== Task 1: Log into Automation Controller
-
-First, you will log in to the automation controller to begin the lab exercises.
-
-.   **Navigate to the Automation Controller UI.**
-+
-    Click on the **Automation Controller** tab at the top of your lab window.
+Click on the **Ansible Automation Platform** tab at the top of your lab window.
 
 .   **Log in with the provided credentials.**
 +
@@ -60,29 +49,146 @@ After logging in, you will land on the main dashboard.
 
 Next, you will create a job template that runs a playbook to retrieve specific virtual machines based on a tag filter.
 
-.   **Navigate to the Templates page.**
+. **Navigate to the Templates page.**
 +
-    In the left navigation menu, go to **Resources** → **Templates**.
-+
-image:https://github.com/IPvSean/pictures_for_github/blob/master/job_templates.png?raw=true[Templates link in navigation menu, 200, opts="border"]
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
 
-.   **Create a new job template.**
+. **Initiate the creation of a new job template.**
 +
-    **Click** the blue **Add** button and select **Add job template**.
-+
-image:https://github.com/IPvSean/pictures_for_github/blob/master/add_job_template.png?raw=true[Add job template button, 200, opts="border"]
+Click the `+ Create Template` then scroll down and click `Create job template`
 
-.   **Enter the job template details.**
+. **Enter the job template details.**
 +
-    Fill out the form with the following information:
+Fill out the form with the following information:
 +
 [cols="1,1"]
 |===
 | Parameter               | Value
 | Name                    | `Retrieve instances by tag`
 | Job Type                | `Run`
-| Inventory               | `Demo Inventory`
+| Inventory               | `Azure Inventory`
 | Project                 | `Cloud Visibility Project`
-| Execution Environment   | `Microsoft Azure Execution Environment`
 | Playbook                | `playbooks/retrieve_vms_detail.yml`
-| Credentials             | `azure_crede
+| Execution Environment   | `Microsoft Azure Execution Environment`
+| Credentials             | `azure_credential`
+|===
++
+TIP: To select the `azure_credential`, click in the text field or on the drop down icon, then select `Microsoft Azure Resource Manager`.
+
+. **Save the job template.**
++
+Scroll to the bottom, click `Create job template`
+
+This particular filter (by default) looks like this:
+[source,yaml,role=execute]
+----
+  tags: "{{ your_tags | default('demo:true') }}"
+----
+
+=== Task 3: Launch the Job Template
+
+Next, you will launch the job template `Retrieve instances by tag` and review the output.
+
+. **Launch the job template.**
++
+Select `🚀 Launch template`.
+
+. **Review the output.**
++
+The output in the Ansible Automation Platform will show the details of the virtual machines.
+
+. **Understand the playbook execution.**
++
+This playbook has three tasks:
++
+* Task one: uses the `azure_rm_virtualmachine_info` module to retrieve all instances with the filter `tags`:
++
+[source,yaml,role=execute]
+----
+- name: retrieve vms from your_location
+  azure.azcollection.azure_rm_virtualmachine_info:
+    tags: "{{ your_tags | default('demo:true') }}"
+  register: retrieved_info
+----
+
+* Task two: uses the `debug` module to print out how many instances matched the filter by using the `length` filter
++
+[source,yaml,role=execute]
+----
+- name: print retrieved_info
+  ansible.builtin.debug:
+    msg: "There are {{ retrieved_info.vms | length }} virtual machine(s) that match your filter"
+----
+
+* Task three: will print out specific information for each virtual machine.
++
+[source,yaml,role=execute]
+----
+- name: print tags
+  ansible.builtin.debug:
+    msg:
+      - name: "{{ item.name }}"
+      - tags: "{{ item.tags }}"
+      - power_state: "{{ item.power_state }}"
+  loop: "{{ retrieved_info.vms | list }}"
+  loop_control:
+      label: "virtual machine info and associated tags"
+----
+
+The output in the automation controller window will look like this:
+
+image::../assets/images/filter_results.png?raw=true[Job output showing formatted tag data, opts="border"]
+
+=== Task 4: Create a Survey
+To make the `Retrieve instances by tag` template more flexible, you will add a survey to filter the results by a specified tag. Surveys allow you to abstract complexity by setting playbook variables with user-friendly questions.
+
+. **Navigate to the Survey tab for the template.**
++
+Go to the **Templates** page, **click** on the name `Retrieve instances by tag`, and then **click** the `Survey` tab.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/survey_tab.png?raw=true[Survey tab, 400, opts="border"]
+
+. **Create a new survey question.**
++
+**Click** the blue `+ Create survey question` button.
++
+
+Fill out the form with the following values:
++
+[cols="1,1"]
+|===
+| Parameter | Value
+| Question | `Provide a specific tag`
+| Description | `Provide a list of tags to filter on`
+| Answer variable name | `your_tags`
+| Answer type | `Multiple Choice (multiple select)`
+| Required | Check the box ☑️
+| Multiple Choice Options | `demo:true` `os:linux` `os:windows` `demo:false` `username:rheluser`
+|===
++
+**Click** the blue `Create survey question` button to save the question.
+
+. **Enable and launch the survey.**
++
+**Enable** the survey by clicking the toggle switch at the top of the page.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/survey_enabled.png?raw=true[Survey enabled toggle, 200, opts="border"]
++
+. **Launch** the `Retrieve instances by tag` job template again. This time, you will see a survey prompt.
+
+. **Use the survey to filter results.**
++
+Try using `os:windows` to retrieve only the Windows virtual machine, or `os:linux` to retrieve only the RHEL machine. This is extremely useful for managing hundreds of virtual machines.
++
+Tryusing some other tag combinations to see what is returned, such as:
+
+* `demo:false`
+* `username:rheluser`
+* `os:windows`
+
+== Next Steps
+
+Press the `Next` button below to proceed to the next challenge.
+
+NOTE: The Ansible Playbook for this lab is sourced from this link:https://github.com/ansible-cloud/azure_visibility[project on GitHub].

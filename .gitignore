@@ -3,3 +3,7 @@
 .cache/
 .vscode/
 .gitignore
+.vscode/*
+.gitignore
+settings.json
+.vscode/settings.json

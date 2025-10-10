@@ -22,18 +22,15 @@ image:https://github.com/IPvSean/pictures_for_github/blob/master/optimization.pn
 
 Cloud environments are composed of numerous resources, including instances, containers, networks, and more. To effectively manage these resources, it is crucial to use **tags**. Tags are simple key-value pairs that help you organize, filter, and track your assets. There is no limit to how many tags a resource can have.
 
-image::../assets/cloud_resources.png[Various Azure cloud resources, opts="border"]
+image::../assets/images/cloud_resources.png?raw=true[Various Azure cloud resources, opts="border"]
 
 === Example of Tags
 
 This screenshot from the Microsoft Azure console shows a virtual machine with several tags. These tags help to quickly understand what the instance is used for, who provisioned it, who owns it, and more.
 
-image::../assets/screenshot_tags.png[Example of tags on an Azure virtual machine, opts="border"]
+image::../assets/images/screenshot_tags.png?raw=true[Example of tags on an Azure virtual machine, opts="border"]
 
-This concludes your lab briefing. Please click the green **Start** button if the lab has not already begun.
-
-image:https://github.com/IPvSean/pictures_for_github/blob/master/start_button.png?raw=true[Start Button, 100, opts="border"]
-
+This concludes your lab briefing. Please move forward.
 ---
 
 == Lab Guide: Hands-On Tasks
@@ -44,11 +41,11 @@ In this first challenge, you will learn about the pre-configured Dynamic Invento
 
 === Task 1: Log into Automation Controller
 
-First, you will log in to the automation controller to begin the lab exercises.
+First, you will log in to the Ansible Automation Platform to begin the lab exercises.
 
-. **Navigate to the Automation Controller UI.**
+. **Navigate to the Ansible Automation Platform UI.**
 +
-Click on the **Automation Controller** tab at the top of your lab window.
+Click on the **Ansible Automation Platform** tab at the top of your lab window.
 
 . **Log in with the provided credentials.**
 +
@@ -66,7 +63,8 @@ Next, you will explore the pre-configured dynamic inventory and inspect the host
 
 . **Navigate to the Inventories page.**
 +
-In the left navigation menu, go to **Resources** → **Inventories**.
+To view them, Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Infrastructure` -> `Inventories`.
 +
 image:https://github.com/IPvSean/pictures_for_github/blob/master/inventories.png?raw=true[Inventories link in navigation menu, 200, opts="border"]
 
@@ -74,11 +72,11 @@ image:https://github.com/IPvSean/pictures_for_github/blob/master/inventories.png
 +
 The inventory has been created for you and synced from Azure automatically. **Click** on the inventory named `Azure Inventory`.
 +
-image::../assets/azure_inventory.png[Azure Inventory details page, opts="border"]
+image::../assets/images/azure_inventory.png[Azure Inventory details page, opts="border"]
 
 . **View the hosts.**
 +
-**Click** on the **Hosts** tab. You will see two hosts listed.
+**Click** on the `Hosts` tab. You will see two hosts listed.
 +
 image:https://github.com/IPvSean/pictures_for_github/blob/master/inventory_hosts_tab.png?raw=true[Inventory Hosts tab, 300, opts="border"]
 
@@ -86,21 +84,18 @@ image:https://github.com/IPvSean/pictures_for_github/blob/master/inventory_hosts
 +
 **Click** on one of the hosts to open its details page.
 +
-image::../assets/hosts_returned.png[List of returned hosts, opts="border"]
+image::../assets/images/hosts_returned.png?raw=true[List of returned hosts, opts="border"]
 
 . **Examine the tags.**
 +
-On the host's *Details* tab, find the `VARIABLES` section and **click** the **Expand** icon on the right-hand side.
+On the host's *Details* tab, find the `VARIABLES` section.
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/expand.png?raw=true[Expand variables icon, 100, opts="border"]
+Scroll down to the `tags` section in the `Variables` frame to see the key-value pairs discovered from the Azure virtual machine. Take note of the tags, as you will use them in a future challenge. You can view the details in both `YAML` and `JSON` format.
 +
-Scroll down to the `tags` section to see the key-value pairs discovered from the Azure virtual machine. Take note of the tags, as you will use them in a future challenge.
+image::../assets/images/azure_tags.png?raw=true[Azure tags in the host variables, opts="border"]
 +
-image::../assets/azure_tags.png[Azure tags in the host variables, opts="border"]
-+
-**Click** the **Done** button when you are finished.
 
-TIP: To see these same tags in the Azure console, you can open the **Azure Portal** tab in your lab environment and log in with the provided credentials.
+TIP: To see these same tags on the Azure resource, you can switch to the `Cloud(Azure)` tab at the top of your lab environment.
 
 === Task 3: Create a Job Template to Display Tags
 
@@ -108,15 +103,12 @@ Now, you will create a job template to run a playbook that retrieves and display
 
 . **Navigate to the Templates page.**
 +
-In the left navigation menu, go to **Resources** → **Templates**.
-+
-image:https://github.com/IPvSean/pictures_for_github/blob/master/job_templates.png?raw=true[Templates link in navigation menu, 200, opts="border"]
+Expand the `Automation Execution` menu on the left.
+`Automation Execution` -> `Templates`.
 
 . **Create a new job template.**
 +
-**Click** the blue **Add** button and select **Add job template**.
-+
-image:https://github.com/IPvSean/pictures_for_github/blob/master/add_job_template.png?raw=true[Add job template button, 200, opts="border"]
+Click the `+ Create Template` then scroll down and click `Create job template`
 
 . **Enter the job template details.**
 +
@@ -127,18 +119,18 @@ Fill out the form with the following information:
 | Parameter | Value
 | Name | `Display tag information`
 | Job Type | `Run`
-| Inventory | `Demo Inventory`
+| Inventory | `Azure Inventory`
 | Project | `Cloud Visibility Project`
-| Execution Environment | `Microsoft Azure Execution Environment`
 | Playbook | `playbooks/display_tags.yml`
+| Execution Environment | `Microsoft Azure Execution Environment`
 | Credentials | `azure_credential`
 |===
 +
-NOTE: To find the `azure_credential`, you may need to filter the *Credential Type* to `Microsoft Azure Resource Manager`.
+TIP: To select the `azure_credential`, click in the text field or on the drop down icon, then select `Microsoft Azure Resource Manager`.
 
 . **Save the job template.**
 +
-**Click** the blue **Save** button.
+Scroll to the bottom, click `Create job template`.
 
 NOTE: The Ansible Playbooks for this lab are sourced from this link:https://github.com/ansible-cloud/azure_visibility[project on GitHub].
 
@@ -148,7 +140,7 @@ Finally, you will run the job template and examine the structured data it collec
 
 . **Launch the job template.**
 +
-Navigate back to the **Templates** page, find the `Display tag information` job template, and **click** the **Launch** icon (🚀).
+Scroll to the bottom, and then `🚀 Launch template`.
 +
 image:https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true[Launch Job Icon, 80, opts="border"]
 
@@ -160,7 +152,7 @@ This playbook runs three tasks:
 * The second task prints the entire JSON payload from the first task.
 * The third task prints a formatted summary of the name, tags, and power state for each VM.
 +
-[source,yaml]
+[source,yaml,role=execute]
 ----
 - name: print tags
   ansible.builtin.debug:
@@ -177,14 +169,14 @@ This playbook runs three tasks:
 +
 The output in the automation controller will show this structured data clearly for each resource.
 +
-image::../assets/output_tags.png[Job output showing formatted tag data, opts="border"]
+image::../assets/images/output_tags.png?raw=true[Job output showing formatted tag data, opts="border"]
 
 ---
 
 == Next Steps
 
-Press the `Check` button below to proceed to the next challenge.
+Press the `Next` button below to proceed to the next challenge.
 
 == Troubleshooting
 
-If you have encountered an issue or have noticed something not quite right, please link:https://github.com/ansible/instruqt/issues/new?title=Issue+with+Ansible+Hybrid+Cloud+Automation+-+Infrastructure+visibility&assigneething
+If you have encountered an issue or have noticed something not quite right, please link:https://github.com/ansible/instruqt/issues/new?title=Issue+with+Ansible+Hybrid+Cloud+Automation+-+Infrastructure+optimization&assignees=hichammourad
