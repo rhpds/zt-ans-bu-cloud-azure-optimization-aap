@@ -34,8 +34,6 @@ image::../assets/images/example2_optimization.png?raw=true[Example of scheduling
 
 This concludes your lab briefing. Please move forward.
 
----
-
 == Lab Guide: Hands-On Tasks
 
 *Estimated time to complete: 20 minutes*
@@ -214,10 +212,6 @@ Switch to the `Hosts` tab. You should now see that the `WIN-ansible` host is no 
 . **Check the instance status.**
 +
 You should see that the `RHEL-ansible` instance is still running, while the Windows instance has been successfully stopped and deallocated.
-+
-image::../assets/images/virtual_machine_example.png?raw=true[Instance status in Azure portal, opts="border"]
-
----
 
 == Why Cloud Optimization is Important
 
