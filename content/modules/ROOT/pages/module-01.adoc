@@ -66,7 +66,6 @@ Next, you will explore the pre-configured dynamic inventory and inspect the host
 To view them, Expand the `Automation Execution` menu on the left.
 `Automation Execution` -> `Infrastructure` -> `Inventories`.
 +
-image:https://github.com/IPvSean/pictures_for_github/blob/master/inventories.png?raw=true[Inventories link in navigation menu, 200, opts="border"]
 
 . **Select the Azure Inventory.**
 +
@@ -176,7 +175,3 @@ image::../assets/images/output_tags.png?raw=true[Job output showing formatted ta
 == Next Steps
 
 Press the `Next` button below to proceed to the next challenge.
-
-== Troubleshooting
-
-If you have encountered an issue or have noticed something not quite right, please link:https://github.com/ansible/instruqt/issues/new?title=Issue+with+Ansible+Hybrid+Cloud+Automation+-+Infrastructure+optimization&assignees=hichammourad
