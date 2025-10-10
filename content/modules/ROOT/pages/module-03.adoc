@@ -14,7 +14,7 @@ This section provides an overview of the lab challenge and instructions for gett
 
 === Challenge Summary
 
-In this challenge, you will create a **workflow**. Public cloud environments are often used by many different teams, and by using automation, you can create workflows to help enforce organizational policies.
+In this challenge, you will create a **Workflow Template**. Public cloud environments are often used by many different teams, and by using automation, you can create workflows to help enforce organizational policies.
 
 image::../assets/images/full_workflow.png?raw=true[Example of a completed workflow, opts="border"]
 
@@ -24,7 +24,7 @@ While a lot of cloud automation focuses on provisioning and de-provisioning, we 
 
 image::https://github.com/IPvSean/pictures_for_github/blob/master/optimize_circle.png?raw=true[The cycle of infrastructure optimization, opts="border"]
 
-This can include tasks like identifying non-compliant resources, scheduling instances to be turned off outside of business hours, or finding and removing orphaned resources.
+This can include tasks like identifying non-compliant resources, scheduling instances to be turned off outside of business hours, or finding and removing orphaned resources. (or even removing resources that are no longer needed)
 
 Two examples of infrastructure optimization are shown below
 
@@ -61,7 +61,7 @@ After logging in, you will land on the main dashboard.
 
 === Task 2: Create the "Stop Instances" Job Template
 
-You will start by creating a job template whose purpose is to stop Azure virtual machines.
+You will start by creating a job template whose purpose is to STOP Azure virtual machines.
 
 . **Navigate to the Templates page.**
 +
@@ -75,7 +75,7 @@ Click the `+ Create Template` then scroll down and click `Create job template`
 
 . **Enter the job template details.**
 +
-    Fill out the form with the following information:
+Fill out the form with the following information:
 +
 [cols="1,1"]
 |===
@@ -84,7 +84,7 @@ Click the `+ Create Template` then scroll down and click `Create job template`
 | Job Type                | `Run`
 | Inventory               | `Azure Inventory`
 | Project                 | `Azure Demos Project`
-| Playbook                | `project/change_state_rhel_vm_demo.yml`
+| Playbook                | `project/stop_azure_vm.yml`
 | Execution Environment   | `Microsoft Azure Execution Environment`
 | Credentials             | `azure_credential`
 |===
@@ -103,11 +103,11 @@ It uses the `azure.azcollection.azure_rm_virtualmachine` module to change the st
 
 [source,yaml]
 ----
-- name: toggle VM state
+- name: Toggle VM state (STOP the VM)
   azure.azcollection.azure_rm_virtualmachine:
     resource_group: "{{ resource_group_name }}"
     name: "{{ item }}"
-    state: "{{ input_state | default('absent') }}"
+    started: "{{ power_state | default('false') }}" # Set to true to start the VM, false to STOP it.
   loop: "{{ vm_name_list }}"
 ----
 
@@ -178,18 +178,18 @@ Find the `Azure Workflow` in the list and click `🚀 Launch template` icon.
 +
 image:https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true[Launch Job Icon, 80, opts="border"]
 
-. **Monitor the visualizer.**
+. **Monitor the Workflow visualizer.**
 +
 The workflow visualizer will show the real-time progress. The workflow will:
 +
-.   Run the `Retrieve instances by tag` node to identify the `WIN-ansible` instance.
-.   Upon success, run the `Stop instances` node, which will turn off the instance identified in the first step.
+. Run the `Retrieve instances by tag` node to identify the `WIN-ansible` instance.
+. Upon success, run the `Stop instances` node, which will POWER OFF the instance identified in the first step.
 
 === Task 5: Verify the Instance is Stopped
 
-Finally, you will confirm the result using one of the following methods.
+Finally, you will confirm the result.
 
-==== Option 1: By Updating the Azure Inventory Source
+==== By Updating the Azure Inventory Source
 
 . **Navigate to the inventory source.**
 +
@@ -203,15 +203,74 @@ In the left navigation menu, Expand `Automation Execution` -> `Infrastructure` -
 +
 Switch to the `Hosts` tab. You should now see that the `WIN-ansible` host is no longer in the inventory (as it is no longer running).
 
-==== Option 2: By Validating in the Cloud Azure tab
-
-. **Navigate to the Cloud (Azure) tab.**
+=== Task 6: EXTRA CHALLENGE - Update the workflow to delete the instance
+. **Create the new job template.**
 +
-**Click** on the `Cloud (Azure)` tab to open it and view the Azure resources.
+Click the `+ Create Template` then scroll down and click `Create job template`
++
+
+. **Enter the job template details.**
++
+Fill out the form with the following information:
++
+[cols="1,1"]
+|===
+| Parameter               | Value
+| Name                    | `Delete instances`
+| Job Type                | `Run`
+| Inventory               | `Azure Inventory`
+| Project                 | `Azure Demos Project`
+| Playbook                | `project/change_state_rhel_vm_demo.yml`
+| Execution Environment   | `Microsoft Azure Execution Environment`
+| Credentials             | `azure_credential`
+|===
++
+TIP: To select the `azure_credential`, click in the text field or on the drop down icon, then select `Microsoft Azure Resource Manager`.
+
+. **Save the job template.**
++
+Scroll to the bottom, click `Create job template`.
+
+. **Edit the workflow.**
++
+Go to the `Azure Workflow` template and click the `Edit` button.
+
+. **Add a new node to the end of the workflow (to Delete the Instance).**
++
+**Hover** over the elipsis (3 dots) of the `Stop instances` node, **click** the `+ Add Step and link` option.
++
+Configure it as follows:
++
+--
+a.  **Job Template:** Select `Delete instances`.
+b.  **Status:** Select `Run On Success`. Click `Next`.
+c.  Click `Finish`.
+--
+. **Save the workflow.**
++
+In the top left corner of the Visualizer, **click** `Save`.
+
+. **Launch the Workflow
++
+Now you are ready to run the complete workflow.
++
+. **Launch the workflow.**
++
+Find the `Azure Workflow` in the list and click `🚀 Launch template` icon.
++
+image:https://github.com/IPvSean/pictures_for_github/blob/master/launch_job.png?raw=true[Launch Job Icon, 80, opts="border"]
+
+. **Validate the result in the Cloud Azure tab.**
++
+**Click** on the `Cloud (Azure)` tab at the top of the lab environment to open it, and view the Azure resources. You may ned to refresh the page to see the changes by clicing on the circular refresh icon next to the tab name.
 +
 . **Check the instance status.**
 +
-You should see that the `RHEL-ansible` instance is still running, while the Windows instance has been successfully stopped and deallocated.
+You should see that the `RHEL-ansible` instance is still running, while the Windows instance `WIN-ansible`has been successfully DELETED.
+
+. **Want to do more with the workflow?**
++
+How about you add a step between the `Stop instances` and `Delete instances` nodes to require an admin approval before deleting the instance?!  If you do this, you will need to re-run the existing job template to spin up the Windows server instance again. Then you can test your workflow with the admin approval step.  Have fun!
 
 == Why Cloud Optimization is Important
 
@@ -226,4 +285,3 @@ Imagine scheduling a workflow to run nightly, searching for any development inst
 Thank you for taking the time to learn about automating cloud infrastructure optimization tasks in Azure using the Red Hat Ansible Automation Platform!
 
 NOTE: The Ansible Playbooks for this lab are sourced from this link:https://github.com/ansible-cloud/azure-demos[project on GitHub]. 
-
